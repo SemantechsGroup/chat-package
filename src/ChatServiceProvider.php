@@ -1,6 +1,6 @@
 <?php
 
-namespace Sementechs\Chat;
+namespace Semantechs\Chat;
 
 use Illuminate\Support\ServiceProvider;
 
