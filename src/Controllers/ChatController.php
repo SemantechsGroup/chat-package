@@ -17,7 +17,7 @@ class ChatController extends Controller
     public static function getUserChat($request)
     {
         try {
-            $userChat = Chat::with('sender_id', 'receiver_id')->where('sender_id', $request['sender_id'])->where('receiver_id', $request['receiver_id'])->latest()->get();
+            $userChat = Chat::with('sender', 'receiver')->where('sender_id', $request['sender_id'])->where('receiver_id', $request['receiver_id'])->latest()->get();
             return $userChat;
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
