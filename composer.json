@@ -1,0 +1,19 @@
+{
+    "name": "semantechs/chat",
+    "description": "Chat package to handle different kinds of chats",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Semantechs\\Chat\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "M. Taha Ahmad",
+            "email": "tahaahmad929@gmail.com"
+        }
+    ],
+    "require": {
+        "pusher/pusher-php-server": "^7.2"
+    }
+}
