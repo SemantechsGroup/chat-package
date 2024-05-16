@@ -13,6 +13,7 @@ class ChatServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->make('Semantechs\Chat\Controllers\ChatController');
     }
 
     /**
