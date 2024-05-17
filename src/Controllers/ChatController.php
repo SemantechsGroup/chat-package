@@ -4,70 +4,35 @@ namespace Semantechs\Chat\Controllers;
 
 use App\Http\Controllers\Controller;
 use Exception;
-use Illuminate\Http\Request;
-use Semantechs\Chat\Event\GroupChatEvent;
-use Semantechs\Chat\Event\UserChatEvent;
-use Semantechs\Chat\Models\Chat;
-use Semantechs\Chat\Models\ChatGroup;
-use Semantechs\Chat\Models\GroupChat;
-use Semantechs\Chat\Models\GroupMember;
+use Semantechs\Chat\Conversation;
+use Semantechs\Chat\Event\ChatEvent;
+use Semantechs\Chat\Message;
+use Semantechs\Chat\Participant;
 
 class ChatController extends Controller
 {
-    public static function getUserChat($request)
+    public static function getMessages($request)
     {
         try {
-            $userChat = Chat::with('sender', 'receiver')->where('sender_id', $request['sender_id'])->where('receiver_id', $request['receiver_id'])->latest()->get();
-            return $userChat;
+            $messages = Message::where('conversation_id', $request->conversation_id)->latest()->get();
+            return $messages;
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
         }
     }
 
-    public static function getGroupChat($request)
+    public static function sendMessage($request)
     {
         try {
-            $groupMembers = GroupMember::where('group_id', $request['group_id'])->pluck('user_id')->toArray();
-            if (!in_array($request['user_id'], $groupMembers)) {
-                return response('Un-Authorized', 401);
-            } else {
-                $groupChat = GroupChat::where('group_id')->latest()->get();
-                return $groupChat;
+            if (empty($request['conversation_id'])) {
+                $conversation = Conversation::create(['user_id' => $request['user_id']]);
+                Participant::create(['user_id' => $request['user_id'], 'conversation_id' => $conversation->id]);
+                Participant::create(['user_id' => $request['receiver_id'], 'conversation_id' => $conversation->id]);
+                $request['conversation_id'] = $conversation->id;
             }
-        } catch (Exception $ex) {
-            return response($ex->getMessage(), 500);
-        }
-    }
-
-    public static function sendChatMessage($request)
-    {
-        try {
-            event(new UserChatEvent($request['sender_id'], $request['receiver_id'], $request['body']));
-            $request['body'] = json_encode($request['body']);
-            Chat::create($request);
+            event(new ChatEvent($request['receiver_id'], $request['user_id'], $conversation->id, $request['text']));
+            Message::create($request);
             return 'success';
-        } catch (Exception $ex) {
-            return response($ex->getMessage(), 500);
-        }
-    }
-
-    public static function sendGroupMessage($request)
-    {
-        try {
-            event(new GroupChatEvent($request['group_id'], $request['sender_id'], $request['body']));
-            $request['body'] = json_encode($request['body']);
-            GroupChat::create($request);
-            return 'success';
-        } catch (Exception $ex) {
-            return response($ex->getMessage(), 500);
-        }
-    }
-
-    public static function createChatGroup($request)
-    {
-        try {
-            $group = ChatGroup::create($request);
-            return $group;
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
         }

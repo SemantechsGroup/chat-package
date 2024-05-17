@@ -1,15 +1,15 @@
 <?php
 
-namespace Semantechs\Chat\Models;
+namespace Semantechs\Chat;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class GroupMember extends Model
+class Participant extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'group_id', 'user_id'
+        'user_id', 'conversation_id'
     ];
 }

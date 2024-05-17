@@ -7,20 +7,21 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserChatEvent implements ShouldBroadcast
+class ChatEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $senderId, $receiverId, $body;
+    public $receiverId, $userId, $conversationId, $text;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($senderId, $receiverId, $body)
+    public function __construct($receiverId, $userId, $conversationId, $text)
     {
-        $this->senderId = $senderId;
         $this->receiverId = $receiverId;
-        $this->body = $body;
+        $this->userId = $userId;
+        $this->conversationId = $conversationId;
+        $this->text = $text;
     }
 
     /**

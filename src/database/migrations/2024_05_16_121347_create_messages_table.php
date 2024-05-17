@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('group_members', function (Blueprint $table) {
+        Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->integer('group_id');
             $table->integer('user_id');
+            $table->integer('conversation_id');
+            $table->integer('media_id')->nullable();
+            $table->text('text');
+            $table->boolean('is_read')->default(false);
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('group_members');
+        Schema::dropIfExists('messages');
     }
 };
