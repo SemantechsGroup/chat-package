@@ -4,14 +4,24 @@ namespace Semantechs\Chat\Controllers;
 
 use App\Http\Controllers\Controller;
 use Exception;
-use Semantechs\Chat\Conversation;
 use Semantechs\Chat\Event\ChatEvent;
-use Semantechs\Chat\Message;
-use Semantechs\Chat\Participant;
+use Semantechs\Chat\Models\Conversation;
+use Semantechs\Chat\Models\Message;
+use Semantechs\Chat\Models\Participant;
 
 class ChatController extends Controller
 {
     public static function getMessages($request)
+    {
+        try {
+            $messages = Message::where('conversation_id', $request->conversation_id)->latest()->get();
+            return $messages;
+        } catch (Exception $ex) {
+            return response($ex->getMessage(), 500);
+        }
+    }
+
+    public static function getParticipants($request)
     {
         try {
             $messages = Message::where('conversation_id', $request->conversation_id)->latest()->get();
