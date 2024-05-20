@@ -12,4 +12,9 @@ class Participant extends Model
     protected $fillable = [
         'user_id', 'conversation_id'
     ];
+
+    public function userProfile()
+    {
+        return $this->hasOne(\App\Models\UserProfile::class, 'id', 'user_id');
+    }
 }
