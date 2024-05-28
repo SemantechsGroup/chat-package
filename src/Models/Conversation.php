@@ -12,7 +12,7 @@ class Conversation extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'name'
+        'user_id', 'name', 'batch_id'
     ];
 
     protected $appends = ['encrypted_id'];

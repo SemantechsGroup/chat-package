@@ -101,7 +101,7 @@ class ChatController extends Controller
     public static function getSingleGroup($request)
     {
         try {
-            $group = Conversation::with('participants.userProfile')->find($request['conversation_id']);
+            $group = Conversation::with('participants')->find($request['conversation_id']);
             return $group;
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
