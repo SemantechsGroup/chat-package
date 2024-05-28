@@ -48,16 +48,25 @@ class ChatController extends Controller
         try {
             $conversation = Conversation::find($request['conversation_id']);
             $conversation->fill(['name' => $request['name']])->save();
-            if (!empty($request['participants'])) {
-                foreach ($request['participants'] as $participant) {
-                    $temp = [
-                        'user_id' => $participant,
-                        'conversation_id' => $conversation->id,
-                    ];
-                    Participant::updateOrCreate($temp, $temp);
-                }
+            $conParticipantsArray = Participant::where('conversation_id', $request['conversation_id'])->pluck('user_id')->toArray();
+            $reqParticipantsArray = $request['participants'];
+
+            $dbArray = array_diff($conParticipantsArray, $reqParticipantsArray);
+            foreach ($dbArray as $item) {
+                $participant = Participant::where('user_id', $item)->where('conversation_id', $request['conversation_id'])->first();
+                $participant->delete();
             }
-            return $conversation;
+
+            $reqArray = array_diff($reqParticipantsArray, $conParticipantsArray);
+            foreach ($reqArray as $item) {
+                $temp = [
+                    'user_id' => $item,
+                    'conversation_id' => $request['conversation_id']
+                ];
+                Participant::create($temp);
+            }
+
+            return 'success';
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
         }
