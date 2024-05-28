@@ -30,8 +30,31 @@ class ChatController extends Controller
             $conversation = Conversation::create($request);
             if (!empty($request['participants'])) {
                 foreach ($request['participants'] as $participant) {
-                    $participant['conversation_id'] = $conversation->id;
-                    Participant::create($participant);
+                    $temp = [
+                        'user_id' => $participant,
+                        'conversation_id' => $conversation->id,
+                    ];
+                    Participant::create($temp);
+                }
+            }
+            return $conversation;
+        } catch (Exception $ex) {
+            return response($ex->getMessage(), 500);
+        }
+    }
+
+    public static function updateGroup($request)
+    {
+        try {
+            $conversation = Conversation::find($request['conversation_id']);
+            $conversation->fill(['name' => $request['name']])->save();
+            if (!empty($request['participants'])) {
+                foreach ($request['participants'] as $participant) {
+                    $temp = [
+                        'user_id' => $participant,
+                        'conversation_id' => $conversation->id,
+                    ];
+                    Participant::updateOrCreate($temp, $temp);
                 }
             }
             return $conversation;
@@ -65,6 +88,26 @@ class ChatController extends Controller
         }
     }
 
+    public static function getListOfGroups($request)
+    {
+        try {
+            $groups = Conversation::where('user_id', $request['user_id'])->where('name', '!=', '')->get();
+            return $groups;
+        } catch (Exception $ex) {
+            return response($ex->getMessage(), 500);
+        }
+    }
+
+    public static function getSingleGroup($request)
+    {
+        try {
+            $group = Conversation::with('participants.userProfile')->find($request['conversation_id']);
+            return $group;
+        } catch (Exception $ex) {
+            return response($ex->getMessage(), 500);
+        }
+    }
+
     public static function getGroups($request)
     {
         try {
@@ -92,6 +135,17 @@ class ChatController extends Controller
             $message = Message::create($request);
             $message = $message->load('media', 'userProfile:id,f_name,l_name', 'userProfile.profilePic.media');
             event(new ChatEvent($request['receiver_id'], $message));
+            return 'success';
+        } catch (Exception $ex) {
+            return response($ex->getMessage(), 500);
+        }
+    }
+
+    public static function deleteGroup($request)
+    {
+        try {
+            $conversation = Conversation::find($request['conversation_id']);
+            $conversation->delete();
             return 'success';
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
