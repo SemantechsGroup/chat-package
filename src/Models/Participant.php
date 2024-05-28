@@ -17,4 +17,9 @@ class Participant extends Model
     {
         return $this->hasOne(\App\Models\UserProfile::class, 'id', 'user_id');
     }
+
+    public function conversation()
+    {
+        return $this->hasOne(Conversation::class, 'id', 'conversation_id');
+    }
 }
