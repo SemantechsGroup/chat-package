@@ -90,8 +90,19 @@ class ChatController extends Controller
     public static function getParticipants($request)
     {
         try {
+            $participants = [];
             $conversationIds = Participant::where('user_id', $request['user_id'])->pluck('conversation_id')->toArray();
-            $participants = Participant::with('userProfile.profilePic.media', 'conversation')->whereIn('conversation_id', $conversationIds)->where('user_id', '!=', $request['user_id'])->get();
+            foreach ($conversationIds as $conversationId) {
+                $group = Conversation::whereNotNull('name')->find($conversationId);
+                if ($group) {
+                    array_push($participants, $group);
+                }
+                unset($conversationIds[$conversationId]);
+            }
+            $dbParticipants = Participant::with('userProfile.profilePic.media', 'conversation')->whereIn('conversation_id', $conversationIds)->where('user_id', '!=', $request['user_id'])->get();
+            foreach ($dbParticipants as $dbParticipant) {
+                array_push($participants, $dbParticipant);
+            }
             return $participants;
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
@@ -152,7 +163,7 @@ class ChatController extends Controller
             } else {
                 event(new ChatEvent($request['receiver_id'], $message));
             }
-            return 'success';
+            return $message;
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
         }
