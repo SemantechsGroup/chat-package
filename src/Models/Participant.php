@@ -10,7 +10,7 @@ class Participant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'conversation_id'
+        'user_id', 'conversation_id', 'last_read_at'
     ];
 
     public function userProfile()

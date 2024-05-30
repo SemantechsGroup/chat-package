@@ -93,14 +93,22 @@ class ChatController extends Controller
             $participants = [];
             $conversationIds = Participant::where('user_id', $request['user_id'])->pluck('conversation_id')->toArray();
             foreach ($conversationIds as $conversationId) {
+                $msgCount = 0;
+                $participant = Participant::where('user_id', $request['user_id'])->where('conversation_id', $conversationId)->whereNotNull('last_read_at')->first();
+                if ($participant) {
+                    $msgCount = Message::where('user_id', '!=', $request['user_id'])->where('conversation_id', $conversationId)->where('created_at', '>', $participant->last_read_at)->count();
+                }
                 $group = Conversation::whereNotNull('name')->find($conversationId);
                 if ($group) {
+                    $group['msg_count'] = $msgCount;
                     array_push($participants, $group);
                 }
                 unset($conversationIds[$conversationId]);
             }
             $dbParticipants = Participant::with('userProfile.profilePic.media', 'conversation')->whereIn('conversation_id', $conversationIds)->where('user_id', '!=', $request['user_id'])->get();
             foreach ($dbParticipants as $dbParticipant) {
+                $msgCount = Message::whereIn('conversation_id', $conversationIds)->where('user_id', $dbParticipant['user_id'])->where('is_read', 0)->count();
+                $dbParticipant['msg_count'] = $msgCount;
                 array_push($participants, $dbParticipant);
             }
             return $participants;
@@ -174,6 +182,17 @@ class ChatController extends Controller
         try {
             $conversation = Conversation::find($request['conversation_id']);
             $conversation->delete();
+            return 'success';
+        } catch (Exception $ex) {
+            return response($ex->getMessage(), 500);
+        }
+    }
+
+    public static function readChatMessages($request)
+    {
+        try {
+            Participant::where('conversation_id', $request['conversation_id'])->where('user_id', $request['user_id'])->update(['last_read_at' => Carbon::now()]);
+            Message::where('conversation_id', $request['conversation_id'])->where('user_id', '!=', $request['user_id'])->where('is_read', 0)->update(['is_read' => 1]);
             return 'success';
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
