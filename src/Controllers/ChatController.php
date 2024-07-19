@@ -103,9 +103,10 @@ class ChatController extends Controller
                     $group['msg_count'] = $msgCount;
                     array_push($participants, $group);
                 }
-                unset($conversationIds[$conversationId]);
             }
-            $dbParticipants = Participant::with('userProfile.profilePic.media', 'conversation')->whereIn('conversation_id', $conversationIds)->where('user_id', '!=', $request['user_id'])->get();
+            $dbParticipants = Participant::with('userProfile.profilePic.media', 'conversation')->whereIn('conversation_id', $conversationIds)->where('user_id', '!=', $request['user_id'])->whereHas('conversation', function ($query) {
+                $query->whereNull('name');
+            })->get();
             foreach ($dbParticipants as $dbParticipant) {
                 $msgCount = Message::whereIn('conversation_id', $conversationIds)->where('user_id', $dbParticipant['user_id'])->where('is_read', 0)->count();
                 $dbParticipant['msg_count'] = $msgCount;
