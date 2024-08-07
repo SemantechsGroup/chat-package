@@ -17,7 +17,7 @@ class ChatController extends Controller
     public static function getMessages($request)
     {
         try {
-            $messages = Message::with('media', 'userProfile.profilePic.media')->where('conversation_id', $request->conversation_id)->get();
+            $messages = Message::with('media', 'userProfile.profilePic')->where('conversation_id', $request->conversation_id)->get();
             return $messages;
         } catch (Exception $ex) {
             return response($ex->getMessage(), 500);
@@ -104,7 +104,7 @@ class ChatController extends Controller
                     array_push($participants, $group);
                 }
             }
-            $dbParticipants = Participant::with('userProfile.profilePic.media', 'conversation')->whereIn('conversation_id', $conversationIds)->where('user_id', '!=', $request['user_id'])->whereHas('conversation', function ($query) {
+            $dbParticipants = Participant::with('userProfile.profilePic', 'conversation')->whereIn('conversation_id', $conversationIds)->where('user_id', '!=', $request['user_id'])->whereHas('conversation', function ($query) {
                 $query->whereNull('name');
             })->get();
             foreach ($dbParticipants as $dbParticipant) {
@@ -163,7 +163,7 @@ class ChatController extends Controller
                 $request['media_id'] = $media->id;
             }
             $message = Message::create($request);
-            $message = $message->load('media', 'userProfile.profilePic.media');
+            $message = $message->load('media', 'userProfile.profilePic');
             if (!isset($request['receiver_id'])) {
                 $participants = Participant::where('conversation_id', $request['conversation_id'])->where('user_id', '!=', $request['user_id'])->pluck('user_id')->toArray();
                 foreach ($participants as $user) {
