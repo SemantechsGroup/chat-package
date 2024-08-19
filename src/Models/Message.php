@@ -13,6 +13,11 @@ class Message extends Model
         'user_id', 'conversation_id', 'text', 'is_read', 'media_id'
     ];
 
+    public function getCreatedAtAttribute($value)
+    {
+        return date('h:i A', strtotime($value));
+    }
+
     public function userProfile()
     {
         return $this->hasOne(\App\Models\UserProfile::class, 'id', 'user_id');
